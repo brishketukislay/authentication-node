@@ -3,7 +3,7 @@ const Task = require('../models/Task');
 // Add a new task
 const addTask = async (req, res) => {
   const { title, description } = req.body;
-  const userId = req.user; // User ID comes from the protected route
+  const userId = req.user; // User ID comes from the authenticated request (via middleware)
 
   try {
     if (!userId) {
@@ -19,7 +19,7 @@ const addTask = async (req, res) => {
     res.status(201).json({ message: 'Task added successfully', task: newTask });
   } catch (error) {
     console.error('Error adding task:', error);
-    res.status(500).json({ message: 'Failed to add task', error: error.message });;
+    res.status(500).json({ message: 'Failed to add task', error: error.message });
   }
 };
 
@@ -27,7 +27,7 @@ const addTask = async (req, res) => {
 const editTask = async (req, res) => {
   const { taskId } = req.params; // Get the task ID from URL params
   const { title, description, completed } = req.body;
-  const userId = req.user; // User ID from the protected route
+  const userId = req.user; // User ID from the protected route (via middleware)
 
   try {
     const task = await Task.findOne({ _id: taskId, user: userId });
@@ -52,7 +52,7 @@ const editTask = async (req, res) => {
 // Delete a task
 const deleteTask = async (req, res) => {
   const { taskId } = req.params;
-  const userId = req.user; // User ID from the protected route
+  const userId = req.user; // User ID from the protected route (via middleware)
 
   try {
     const task = await Task.findOneAndDelete({ _id: taskId, user: userId });
@@ -69,7 +69,7 @@ const deleteTask = async (req, res) => {
 
 // Get all tasks for the user
 const getTasks = async (req, res) => {
-  const userId = req.user;
+  const userId = req.user; // User ID from the protected route (via middleware)
 
   try {
     const tasks = await Task.find({ user: userId });
