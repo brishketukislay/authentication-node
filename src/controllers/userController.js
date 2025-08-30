@@ -45,8 +45,8 @@ const registerUser = async (req, res) => {
     // Set access token in HTTP-only cookie
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
-      sameSite: 'Strict', // Mitigate CSRF attacks
+      secure: true,//process.env.NODE_ENV === 'production', // Use HTTPS in production
+      sameSite: "none",//'Strict', // Mitigate CSRF attacks
       maxAge: 15 * 60 * 1000, // Access token expires in 15 minutes
     });
 
