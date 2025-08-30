@@ -13,7 +13,7 @@ const app = express();
 app.use(cookieParser()); // Middleware to parse cookies
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cors({
-  origin: 'http://localhost:3000', // Adjust this to your frontend's origin
+  origin: ['http://localhost:3000', 'https://authentication-ui.onrender.com'],// Adjust this to your frontend's origin
   credentials: true, // Allow cookies to be sent
 })); 
 // app.options('*', cors());
