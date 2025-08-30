@@ -37,8 +37,8 @@ const registerUser = async (req, res) => {
     // Set refresh token in HTTP-only cookie
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
-      sameSite: 'Strict', // Mitigate CSRF attacks
+      secure: true, //process.env.NODE_ENV === 'production', // Use HTTPS in production
+      sameSite: "none",//'Strict', // Mitigate CSRF attacks
       maxAge: 7 * 24 * 60 * 60 * 1000, // Refresh token expires in 7 days
     });
 
