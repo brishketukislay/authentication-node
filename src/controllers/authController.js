@@ -38,6 +38,7 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
+  const isProduction = process.env.NODE_ENV === 'production';
   const { email, password } = req.body;
 
   try {
@@ -52,15 +53,15 @@ const loginUser = async (req, res) => {
 
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'Lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'None' : 'Lax',
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('user_id', user._id.toString(), {
       httpOnly: true,
-      secure: false,
-      sameSite: 'Lax',
+      secure: isProduction,
+      sameSite: isProduction ? 'None' : 'Lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
