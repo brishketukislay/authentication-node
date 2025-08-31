@@ -1,32 +1,27 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
-const userRoutes = require('./src/routes/userRoutes');
-const taskRoutes = require('./src/routes/taskRoutes');
 const cors = require('cors');
+const connectDB = require('./src/config/db');
 
-dotenv.config(); // This will load the .env variables
+const authRoutes = require('./src/routes/authRoutes');
+const taskRoutes = require('./src/routes/taskRoutes');
 
+dotenv.config();
 
 const app = express();
-app.use(cookieParser()); // Middleware to parse cookies
-app.use(express.json()); // Middleware to parse JSON bodies
-app.use(cors({
-  origin: ['http://localhost:3000', 'https://authentication-ui.onrender.com'],// Adjust this to your frontend's origin
-  credentials: true, // Allow cookies to be sent
-})); 
-// app.options('*', cors());
+connectDB();
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => console.error('Error connecting to MongoDB:', err));
+app.use(cookieParser());
+app.use(express.json());
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://authentication-ui.onrender.com'],
+  credentials: true,
+}));
 
 // Routes
-app.use('/api/users', userRoutes); // Handle routes related to users
+app.use('/api/users', authRoutes);
 app.use('/api', taskRoutes);
-// Server listening on port 5000
-app.listen(5000, () => {
-  console.log('Server running on port 5000');
-});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

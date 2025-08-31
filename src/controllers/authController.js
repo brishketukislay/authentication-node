@@ -1,31 +1,35 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
-const generateTokens = (userId) => {
-  const accessToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '15m' });
-  const refreshToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
-  return { accessToken, refreshToken };
-};
+const { generateTokens } = require('../utils/tokenUtils');
 
 const registerUser = async (req, res) => {
   const { email, password } = req.body;
+
   try {
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: 'User already exists' });
+    if (await User.findOne({ email })) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
 
     const user = new User({ email, password });
     await user.save();
 
-    const { accessToken, refreshToken } = generateTokens(user._id);
-    user.refreshToken = refreshToken;
+    // const { accessToken, refreshToken } = generateTokens(user._id);
+    // user.refreshToken = refreshToken;
     await user.save();
 
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'Lax',
-      maxAge:15 * 60 * 1000, // 15 minute
-    });
+    // res.cookie('access_token', accessToken, {
+    //   httpOnly: true,
+    //   secure: false,
+    //   sameSite: 'Lax',
+    //   maxAge: 15 * 60 * 1000,
+    // });
+
+    // res.cookie('user_id', user._id.toString(), {
+    //   httpOnly: true,
+    //   secure: false,
+    //   sameSite: 'Lax',
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
@@ -35,6 +39,7 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const user = await User.findOne({ email });
     if (!user || !(await user.matchPassword(password))) {
@@ -49,15 +54,15 @@ const loginUser = async (req, res) => {
       httpOnly: true,
       secure: false,
       sameSite: 'Lax',
-      maxAge: 15* 60 * 1000,
+      maxAge: 15 * 60 * 1000,
     });
-    res.cookie('user_id', user._id.toString(), {
-  httpOnly: true,
-  secure: false, // Set to true in production with HTTPS
-  sameSite: 'Lax',
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-});
 
+    res.cookie('user_id', user._id.toString(), {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.status(200).json({ message: 'Login successful' });
   } catch (err) {
@@ -66,10 +71,7 @@ const loginUser = async (req, res) => {
 };
 
 const refreshAccessToken = async (req, res) => {
-  const accessTokenCookie = req.cookies.access_token;
-  // const userId = accessTokenCookie ? jwt.decode(accessTokenCookie)?.id : null;
   const userId = req.cookies.user_id;
-
   if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
   const user = await User.findById(userId);
@@ -86,9 +88,10 @@ const refreshAccessToken = async (req, res) => {
 };
 
 const logoutUser = async (req, res) => {
-  const accessCookie = req.cookies.access_token;
-  if (accessCookie) {
-    const decoded = jwt.decode(accessCookie);
+  const accessToken = req.cookies.access_token;
+
+  if (accessToken) {
+    const decoded = jwt.decode(accessToken);
     if (decoded?.id) {
       const user = await User.findById(decoded.id);
       if (user) {
@@ -98,8 +101,8 @@ const logoutUser = async (req, res) => {
     }
   }
 
-  res.clearCookie('access_token', { path: '/' });
-  res.clearCookie('user_id', { path: '/' });
+  res.clearCookie('access_token');
+  res.clearCookie('user_id');
   res.status(200).json({ message: 'Logged out successfully' });
 };
 
