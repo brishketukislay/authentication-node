@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const generateTokens = (userId) => {
-  const accessToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '1m' });
+  const accessToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '15m' });
   const refreshToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
   return { accessToken, refreshToken };
 };
@@ -75,7 +75,7 @@ const refreshAccessToken = async (req, res) => {
   const user = await User.findById(userId);
   if (!user || !user.refreshToken) return res.status(403).json({ message: 'Invalid refresh token' });
 
-  const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1m' });
+  const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
   res.cookie('access_token', newAccessToken, {
     httpOnly: true,
     secure: false,
@@ -99,6 +99,7 @@ const logoutUser = async (req, res) => {
   }
 
   res.clearCookie('access_token', { path: '/' });
+  res.clearCookie('user_id', { path: '/' });
   res.status(200).json({ message: 'Logged out successfully' });
 };
 
